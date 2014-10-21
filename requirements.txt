@@ -1,0 +1,10 @@
+backports.ssl-match-hostname==3.4.0.2
+certifi==14.05.14
+ecdsa==0.11
+gevent==1.0.1
+greenlet==0.4.5
+parallel-ssh==0.61
+paramiko==1.15.1
+pycrypto==2.6.1
+tornado==4.0.2
+wsgiref==0.1.2
