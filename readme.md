@@ -6,8 +6,8 @@ Another parallel ssh command executor
 Command line wrapper for [pkittenis/parallel-ssh](https://github.com/pkittenis/parallel-ssh).
 
 Powered by:
-* python
-* gevent
+* [python](https://www.python.org/)
+* [gevent](http://www.gevent.org/contents.html)
 * [paramiko](https://github.com/paramiko/paramiko)
 * [torando.options](http://tornado.readthedocs.org/en/latest/options.html)
 

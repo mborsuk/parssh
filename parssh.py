@@ -3,6 +3,7 @@
 from gevent import monkey; monkey.patch_all()
 from tornado.options import options, define
 import sys
+import os
 import json
 import pssh
 import logging
@@ -49,12 +50,10 @@ if __name__ == '__main__':
         response = client.get_stdout(g, return_buffers=True)
         host = response.keys().pop()
         retval = response[host]['exit_code']
-        stdout = [line for line in response[host]['stdout']]
         stderr = [line for line in response[host]['stderr']]
-        logger.info('[{}][{}] {}'
-                .format(host, retval, ','.join(stdout)))
-        host_responses[host] = { 'exit_code': retval,
-            'stdout': stdout, 'stderr': stderr }
+        for line in response[host]['stdout']:
+            logger.info('[{}][{}]: {}' .format(host, retval, line))
+        host_responses[host] = { 'exit_code': retval, 'stderr': stderr }
     non_zero = []
     for h in host_responses.keys():
         if host_responses[h]['exit_code'] != 0:
