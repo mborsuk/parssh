@@ -4,9 +4,11 @@ from gevent import monkey; monkey.patch_all()
 from tornado.options import options, define
 import sys
 import os
+import time
 import json
 import pssh
 import logging
+import tempfile
 
 define("config", type=str, metavar="config.py",
         callback=lambda path: options.parse_config_file(path, final=False),
@@ -17,8 +19,8 @@ define("hosts", type=str, multiple=True,
 define("hosts_file", type=str, multiple=False,
         metavar="hostfile.txt",
         help="file containing new-line separated list of ssh hosts (required or specify hosts)")
-define("command", type=str, metavar="uptime",
-        help="command to execute on hosts (required)")
+define("command", type=str, metavar="uptime", help="command to execute on hosts (required)")
+define("outdir", type=str, metavar="/tmp", default=os.getcwd(), help="output directory")
 define("sudo", type=bool, default=False, help="use sudo")
 
 def validate_options():
@@ -33,12 +35,11 @@ class Error(Exception):
     pass
 
 if __name__ == '__main__':
-    try:
-        options.logging = 'warn'
-        options.add_parse_callback(validate_options)
-        options.parse_command_line()
-    except Error as e:
-        sys.stderr.write('{}\n'.format(str(e)))
+    options.logging = 'warn'
+    options.add_parse_callback(validate_options)
+    options.parse_command_line()
+    if not os.path.exists(options.outdir):
+        os.mkdir(options.outdir)
     logger = logging.getLogger()
     if options.hosts_file:
         with open(options.hosts_file) as file:
@@ -51,9 +52,14 @@ if __name__ == '__main__':
         host = response.keys().pop()
         retval = response[host]['exit_code']
         stderr = [line for line in response[host]['stderr']]
-        for line in response[host]['stdout']:
-            logger.info('[{}][{}]: {}' .format(host, retval, line))
-        host_responses[host] = { 'exit_code': retval, 'stderr': stderr }
+        fn = '{}_{}'.format(host, time.strftime("%Y_%m_%d_%H%M%S", time.gmtime()))
+        with open(os.path.join(options.outdir, fn), 'w') as fh:
+            fname = fh.name
+            for line in response[host]['stdout']:
+                logger.info('[{}][{}]: {}'.format(host, retval, line))
+                fh.write(line)
+                fh.write('\n')
+        host_responses[host] = { 'exit_code': retval, 'stderr': stderr, 'stdout_file': fname }
     non_zero = []
     for h in host_responses.keys():
         if host_responses[h]['exit_code'] != 0:
