@@ -3,6 +3,8 @@ parssh
 
 Another parallel ssh command executor
 
+*WIP - need to add gevent support to paramiko for full functionality & performance* 
+
 Command line wrapper for [pkittenis/parallel-ssh](https://github.com/pkittenis/parallel-ssh).
 
 Powered by:
